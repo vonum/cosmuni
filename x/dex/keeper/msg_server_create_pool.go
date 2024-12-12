@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmuni/x/dex/types"
 
@@ -24,12 +25,14 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
     return nil, errorsmod.Wrapf(types.ErrPoolExists, "pool %s exists", poolId)
   }
 
+  sharesAmount := a0 + a1
   pool := types.LiquidityPool{
     Index: poolId,
     Token0: t0,
     Token1: t1,
     Amount0: a0,
     Amount1: a1,
+    TotalShares: sharesAmount,
   }
   k.Keeper.SetLiquidityPool(ctx, pool)
 
@@ -43,9 +46,23 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
     types.ModuleName,
     sdk.Coins{coins0, coins1},
   )
-
   if err != nil {
     return nil, errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)
+  }
+
+  shares, err := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s-shares", sharesAmount, poolId))
+  if err != nil {
+    return nil, errorsmod.Wrapf(err, "failed to parse share denom")
+  }
+
+  err = k.bankKeeper.MintCoins(ctx, types.ModuleName, shares)
+  if err != nil {
+    return nil, errorsmod.Wrapf(types.ErrMintingShares, "error: %s", err)
+  }
+
+  err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, senderAddr, shares)
+  if err != nil {
+    return nil, errorsmod.Wrapf(types.ErrTransferingShares, "error: %s", err)
   }
 
 	return &types.MsgCreatePoolResponse{}, nil
