@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package cosmuni.dex;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmuni/dex/params.proto";
+import "cosmuni/dex/liquidity_pool.proto";
+
+option go_package = "cosmuni/x/dex/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  
+  // Parameters queries the parameters of the module.
+  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/cosmuni/dex/params";
+  
+  }
+  
+  // Queries a list of LiquidityPool items.
+  rpc LiquidityPool    (QueryGetLiquidityPoolRequest) returns (QueryGetLiquidityPoolResponse) {
+    option (google.api.http).get = "/cosmuni/dex/liquidity_pool/{index}";
+  
+  }
+  rpc LiquidityPoolAll (QueryAllLiquidityPoolRequest) returns (QueryAllLiquidityPoolResponse) {
+    option (google.api.http).get = "/cosmuni/dex/liquidity_pool";
+  
+  }
+}
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+message QueryGetLiquidityPoolRequest {
+  string index = 1;
+}
+
+message QueryGetLiquidityPoolResponse {
+  LiquidityPool liquidityPool = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllLiquidityPoolRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllLiquidityPoolResponse {
+  repeated LiquidityPool                          liquidityPool = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination    = 2;
+}
+

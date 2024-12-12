@@ -1,14 +1,38 @@
 version: 1
 validation: sovereign
-accounts: 
+accounts:
 - name: alice
   coins:
   - 20000token
   - 200000000stake
+  - 100000usdc
+  - 100000usdt
+  - 5000atom
+  - 30btc
+  - 150eth
 - name: bob
   coins:
   - 10000token
   - 100000000stake
+  - 100000usdc
+  - 100000usdt
+  - 5000atom
+  - 30btc
+  - 150eth
+- name: vitalik
+  coins:
+  - 10000token
+  - 100000000stake
+  - 100000usdc
+  - 100000usdt
+  - 5000atom
+  - 30btc
+  - 150000000000eth
+- name: satoshi
+  coins:
+  - 10000token
+  - 100000000stake
+  - 10000000btc
 client:
   openapi:
     path: docs/static/openapi.yml

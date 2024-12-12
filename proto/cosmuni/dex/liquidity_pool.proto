@@ -1,0 +1,15 @@
+syntax = "proto3";
+package cosmuni.dex;
+
+option go_package = "cosmuni/x/dex/types";
+
+message LiquidityPool {
+  string index = 1; 
+  string token0 = 2; 
+  string token1 = 3; 
+  uint64 amount0 = 4; 
+  uint64 amount1 = 5; 
+  uint64 totalShares = 6; 
+  
+}
+

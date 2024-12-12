@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package cosmuni.dex;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "cosmuni/dex/params.proto";
+import "cosmuni/dex/liquidity_pool.proto";
+
+option go_package = "cosmuni/x/dex/types";
+
+// GenesisState defines the dex module's genesis state.
+message GenesisState {
+  
+  // params defines all the parameters of the module.
+           Params        params            = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated LiquidityPool liquidityPoolList = 2 [(gogoproto.nullable) = false] ;
+}
+
