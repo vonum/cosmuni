@@ -27,6 +27,10 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgCreatePool int = 100
 
+	opWeightMsgDeposit = "op_weight_msg_deposit"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgDeposit int = 100
+
 	// this line is used by starport scaffolding # simapp/module/const
 )
 
@@ -61,6 +65,17 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 		dexsimulation.SimulateMsgCreatePool(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
+	var weightMsgDeposit int
+	simState.AppParams.GetOrGenerate(opWeightMsgDeposit, &weightMsgDeposit, nil,
+		func(_ *rand.Rand) {
+			weightMsgDeposit = defaultWeightMsgDeposit
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgDeposit,
+		dexsimulation.SimulateMsgDeposit(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
 	// this line is used by starport scaffolding # simapp/module/operation
 
 	return operations
@@ -74,6 +89,14 @@ func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.Wei
 			defaultWeightMsgCreatePool,
 			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
 				dexsimulation.SimulateMsgCreatePool(am.accountKeeper, am.bankKeeper, am.keeper)
+				return nil
+			},
+		),
+		simulation.NewWeightedProposalMsg(
+			opWeightMsgDeposit,
+			defaultWeightMsgDeposit,
+			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
+				dexsimulation.SimulateMsgDeposit(am.accountKeeper, am.bankKeeper, am.keeper)
 				return nil
 			},
 		),

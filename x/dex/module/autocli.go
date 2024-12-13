@@ -45,6 +45,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:          "Send a createPool tx",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "token0"}, {ProtoField: "token1"}, {ProtoField: "amount0"}, {ProtoField: "amount1"}},
 				},
+				{
+					RpcMethod:      "Deposit",
+					Use:            "deposit [token-0] [token-1] [amount-0] [amount-1]",
+					Short:          "Send a deposit tx",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "token0"}, {ProtoField: "token1"}, {ProtoField: "amount0"}, {ProtoField: "amount1"}},
+				},
 				// this line is used by ignite scaffolding # autocli/tx
 			},
 		},

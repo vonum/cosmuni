@@ -18,6 +18,7 @@ service Msg {
   // parameters. The authority defaults to the x/gov module account.
   rpc UpdateParams (MsgUpdateParams) returns (MsgUpdateParamsResponse);
   rpc CreatePool   (MsgCreatePool  ) returns (MsgCreatePoolResponse  );
+  rpc Deposit      (MsgDeposit     ) returns (MsgDepositResponse     );
 }
 // MsgUpdateParams is the Msg/UpdateParams request type.
 message MsgUpdateParams {
@@ -47,4 +48,15 @@ message MsgCreatePool {
 }
 
 message MsgCreatePoolResponse {}
+
+message MsgDeposit {
+  option (cosmos.msg.v1.signer) = "creator";
+  string creator = 1;
+  string token0  = 2;
+  string token1  = 3;
+  uint64 amount0 = 4;
+  uint64 amount1 = 5;
+}
+
+message MsgDepositResponse {}
 
