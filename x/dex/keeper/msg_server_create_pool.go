@@ -32,18 +32,18 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		Amount0:     a0,
 		Amount1:     a1,
 		TotalShares: sharesAmount,
-    K:           types.CalculateK(a0, a1),
+		K:           types.CalculateK(a0, a1),
 	}
 	k.Keeper.SetLiquidityPool(ctx, pool)
 
 	senderAddr, _ := sdk.AccAddressFromBech32(msg.Creator)
-  lpCoins, _ := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s,%d%s", a0, t0, a1, t1))
+	lpCoins, _ := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s,%d%s", a0, t0, a1, t1))
 
 	err := k.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
 		senderAddr,
 		types.ModuleName,
-    lpCoins,
+		lpCoins,
 	)
 	if err != nil {
 		return nil, errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)

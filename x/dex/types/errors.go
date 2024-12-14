@@ -20,4 +20,5 @@ var (
 	ErrTransferingShares  = sdkerrors.Register(ModuleName, 1108, "failed to transfer shares")
 
 	ErrPoolNonExistant    = sdkerrors.Register(ModuleName, 1109, "pool doesn't exists")
+  ErrInsufficientShhares   = sdkerrors.Register(ModuleName, 1110, "insufficient shares")
 )

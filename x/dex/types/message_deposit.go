@@ -23,5 +23,26 @@ func (msg *MsgDeposit) ValidateBasic() error {
 	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
+
+	if msg.Token0 == msg.Token1 {
+		return errorsmod.Wrapf(ErrSameTokenPool, "token provided twice %s", msg.Token0)
+	}
+
+	if err := sdk.ValidateDenom(msg.Token0); err != nil {
+		return errorsmod.Wrapf(ErrInvalidToken, "invalid token0 %s", msg.Token0)
+	}
+
+	if err := sdk.ValidateDenom(msg.Token1); err != nil {
+		return errorsmod.Wrapf(ErrInvalidToken, "invalid token1 %s", msg.Token1)
+	}
+
+	if msg.Amount0 <= 0 {
+		return errorsmod.Wrapf(ErrInvalidTokenAmount, "invalid token0 amount %d", msg.Amount0)
+	}
+
+	if msg.Amount1 <= 0 {
+		return errorsmod.Wrapf(ErrInvalidTokenAmount, "invalid token1 amount %d", msg.Amount1)
+	}
+
 	return nil
 }

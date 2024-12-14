@@ -9,3 +9,15 @@ func GeneratePoolId(token0, token1 string, amount0, amount1 uint64) (string, str
 		return fmt.Sprintf("%s-%s", token1, token0), token1, token0, amount1, amount0
 	}
 }
+
+func GeneratePoolId2(token0, token1 string) (string, string, string) {
+  if token0 >= token1 {
+    return fmt.Sprintf("%s-%s", token0, token1), token0, token1
+  }
+
+  return fmt.Sprintf("%s-%s", token1, token0), token1, token0
+}
+
+func PoolDenom(poolId string) string {
+  return fmt.Sprintf("%s-shares", poolId)
+}
