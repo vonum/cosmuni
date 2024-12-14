@@ -32,6 +32,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		Amount0:     a0,
 		Amount1:     a1,
 		TotalShares: sharesAmount,
+    K:           types.CalculateK(a0, a1),
 	}
 	k.Keeper.SetLiquidityPool(ctx, pool)
 
