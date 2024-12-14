@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	"cosmuni/x/dex/types"
 
@@ -13,7 +12,13 @@ import (
 func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types.MsgDepositResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	poolId, t0, t1, a0, a1 := types.GeneratePoolId(msg.Token0, msg.Token1, msg.Amount0, msg.Amount1)
+  poolId := types.GeneratePoolId(msg.Token0, msg.Token1)
+	t0, t1, a0, a1 := types.OrderTokensAndAmounts(
+    msg.Token0,
+    msg.Token1,
+    msg.Amount0,
+    msg.Amount1,
+  )
 
 	pool, found := k.Keeper.GetLiquidityPool(ctx, poolId)
 	if !found {
@@ -21,8 +26,9 @@ func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types
 	}
 
 	senderAddr, _ := sdk.AccAddressFromBech32(msg.Creator)
-	lpCoins, _ := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s,%d%s", a0, t0, a1, t1))
+	sharesAmount := types.CalculateShares(a0, a1, pool.TotalShares)
 
+	lpCoins, _ := sdk.ParseCoinsNormalized(types.FormatCoinsStr(t0, t1, a0, a1))
 	err := k.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
 		senderAddr,
@@ -30,21 +36,17 @@ func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types
 		lpCoins,
 	)
 	if err != nil {
-		// return nil, errorsmod.Wrapf(types.ErrProvidingLiquidity, fmt.Sprintf("%s - %d%s,%d%s", lpCoins, a0, t0, a1, t1))
 		return nil, errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)
 	}
 
-	sharesAmount := types.CalculateShares(a0, a1, pool.TotalShares)
-	shares, err := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s-shares", sharesAmount, poolId))
+	shares, err := sdk.ParseCoinsNormalized(
+    types.FormatShareCoinStr(poolId, sharesAmount),
+  )
+
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, shares)
 	if err != nil {
 		return nil, errorsmod.Wrapf(types.ErrMintingShares, "error: %s", err)
 	}
-
-	pool.TotalShares += sharesAmount
-	pool.Amount0 += a0
-	pool.Amount1 += a1
-	k.SetLiquidityPool(ctx, pool)
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
@@ -55,6 +57,11 @@ func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types
 	if err != nil {
 		return nil, errorsmod.Wrapf(types.ErrTransferingShares, "error: %s", err)
 	}
+
+	pool.TotalShares += sharesAmount
+	pool.Amount0 += a0
+	pool.Amount1 += a1
+	k.SetLiquidityPool(ctx, pool)
 
 	return &types.MsgDepositResponse{}, nil
 }

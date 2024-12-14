@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	"cosmuni/x/dex/types"
 
@@ -13,7 +12,8 @@ import (
 func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (*types.MsgCreatePoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	poolId, t0, t1, a0, a1 := types.GeneratePoolId(
+  poolId := types.GeneratePoolId(msg.Token0, msg.Token1)
+	t0, t1, a0, a1 := types.OrderTokensAndAmounts(
 		msg.Token0,
 		msg.Token1,
 		msg.Amount0,
@@ -37,7 +37,7 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	k.Keeper.SetLiquidityPool(ctx, pool)
 
 	senderAddr, _ := sdk.AccAddressFromBech32(msg.Creator)
-	lpCoins, _ := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s,%d%s", a0, t0, a1, t1))
+	lpCoins, _ := sdk.ParseCoinsNormalized(types.FormatCoinsStr(t0, t1, a0, a1))
 
 	err := k.bankKeeper.SendCoinsFromAccountToModule(
 		ctx,
@@ -49,7 +49,9 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 		return nil, errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)
 	}
 
-	shares, err := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s-shares", sharesAmount, poolId))
+	shares, err := sdk.ParseCoinsNormalized(
+    types.FormatShareCoinStr(poolId, sharesAmount),
+  )
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to parse share denom")
 	}

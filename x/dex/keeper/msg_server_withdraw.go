@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	"cosmuni/x/dex/types"
 
@@ -30,18 +29,22 @@ func (k msgServer) Withdraw(goCtx context.Context, msg *types.MsgWithdraw) (*typ
   a0 := uint64(float64(pool.Amount0) * shareRatio)
   a1 := uint64(float64(pool.Amount1) * shareRatio)
 
-  coins, _ := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s,%d%s", a0, pool.Token0, a1, pool.Token1))
+	lpCoins, _ := sdk.ParseCoinsNormalized(
+    types.FormatCoinsStr(pool.Token0, pool.Token1, a0, a1),
+  )
   err := k.bankKeeper.SendCoinsFromModuleToAccount(
     ctx,
     types.ModuleName,
     senderAddr,
-    coins,
+    lpCoins,
   )
   if err != nil {
     return nil, err
   }
 
-  shareCoins, _ := sdk.ParseCoinsNormalized(fmt.Sprintf("%d%s", msg.Shares, poolDenom))
+	shareCoins, err := sdk.ParseCoinsNormalized(
+    types.FormatShareCoinStr(msg.PoolId, msg.Shares),
+  )
   err = k.bankKeeper.SendCoinsFromAccountToModule(
     ctx,
     senderAddr,
@@ -51,6 +54,7 @@ func (k msgServer) Withdraw(goCtx context.Context, msg *types.MsgWithdraw) (*typ
   if err != nil {
     return nil, err
   }
+
   err =  k.bankKeeper.BurnCoins(ctx, types.ModuleName, shareCoins)
   if err != nil {
     return nil, err
