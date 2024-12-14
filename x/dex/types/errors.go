@@ -18,4 +18,6 @@ var (
 	ErrProvidingLiquidity = sdkerrors.Register(ModuleName, 1106, "failed to provide liquidity")
 	ErrMintingShares      = sdkerrors.Register(ModuleName, 1107, "failed to mint shares")
 	ErrTransferingShares  = sdkerrors.Register(ModuleName, 1108, "failed to transfer shares")
+
+	ErrPoolNonExistant    = sdkerrors.Register(ModuleName, 1109, "pool doesn't exists")
 )
