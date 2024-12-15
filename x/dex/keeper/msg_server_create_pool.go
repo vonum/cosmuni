@@ -12,7 +12,7 @@ import (
 func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (*types.MsgCreatePoolResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-  poolId := types.GeneratePoolId(msg.Token0, msg.Token1)
+	poolId := types.GeneratePoolId(msg.Token0, msg.Token1)
 	t0, t1, a0, a1 := types.OrderTokensAndAmounts(
 		msg.Token0,
 		msg.Token1,
@@ -50,8 +50,8 @@ func (k msgServer) CreatePool(goCtx context.Context, msg *types.MsgCreatePool) (
 	}
 
 	shares, err := sdk.ParseCoinsNormalized(
-    types.FormatShareCoinStr(poolId, sharesAmount),
-  )
+		types.FormatShareCoinStr(poolId, sharesAmount),
+	)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "failed to parse share denom")
 	}

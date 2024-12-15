@@ -57,6 +57,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:          "Send a withdraw tx",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "poolId"}, {ProtoField: "shares"}},
 				},
+				{
+					RpcMethod:      "Swap",
+					Use:            "swap [token-0] [token-1] [amount-0] [amount-1]",
+					Short:          "Send a swap tx",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "token0"}, {ProtoField: "token1"}, {ProtoField: "amount0"}, {ProtoField: "amount1"}},
+				},
 				// this line is used by ignite scaffolding # autocli/tx
 			},
 		},

@@ -11,8 +11,8 @@ var _ sdk.Msg = &MsgWithdraw{}
 func NewMsgWithdraw(creator string, poolId string, shares uint64) *MsgWithdraw {
 	return &MsgWithdraw{
 		Creator: creator,
-    PoolId: poolId,
-    Shares: shares,
+		PoolId:  poolId,
+		Shares:  shares,
 	}
 }
 

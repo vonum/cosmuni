@@ -12,13 +12,13 @@ import (
 func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types.MsgDepositResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-  poolId := types.GeneratePoolId(msg.Token0, msg.Token1)
+	poolId := types.GeneratePoolId(msg.Token0, msg.Token1)
 	t0, t1, a0, a1 := types.OrderTokensAndAmounts(
-    msg.Token0,
-    msg.Token1,
-    msg.Amount0,
-    msg.Amount1,
-  )
+		msg.Token0,
+		msg.Token1,
+		msg.Amount0,
+		msg.Amount1,
+	)
 
 	pool, found := k.Keeper.GetLiquidityPool(ctx, poolId)
 	if !found {
@@ -40,8 +40,8 @@ func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types
 	}
 
 	shares, err := sdk.ParseCoinsNormalized(
-    types.FormatShareCoinStr(poolId, sharesAmount),
-  )
+		types.FormatShareCoinStr(poolId, sharesAmount),
+	)
 
 	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, shares)
 	if err != nil {
