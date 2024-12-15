@@ -8,6 +8,8 @@ import (
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
+	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // SetLiquidityPool set a specific liquidityPool in the store from its index
@@ -68,4 +70,86 @@ func (k Keeper) GetAllLiquidityPool(ctx context.Context) (list []types.Liquidity
 	}
 
 	return
+}
+
+func (k Keeper) ExecuteDeposit(
+  ctx context.Context,
+  senderAddr sdk.AccAddress,
+  lpCoins sdk.Coins,
+  shares sdk.Coins,
+) error {
+  err := k.bankKeeper.SendCoinsFromAccountToModule(
+		ctx,
+		senderAddr,
+		types.ModuleName,
+		lpCoins,
+	)
+	if err != nil {
+		return errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)
+	}
+
+	err = k.bankKeeper.MintCoins(ctx, types.ModuleName, shares)
+	if err != nil {
+		return errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)
+	}
+
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, senderAddr, shares)
+	if err != nil {
+		return errorsmod.Wrapf(types.ErrProvidingLiquidity, "error: %s", err)
+	}
+
+  return nil
+}
+
+func (k Keeper) ExecuteWithdrawal(
+  ctx context.Context,
+  senderAddr sdk.AccAddress,
+  lpCoins sdk.Coins,
+  shares sdk.Coins,
+) error {
+  err := k.bankKeeper.SendCoinsFromModuleToAccount(
+    ctx,
+    types.ModuleName,
+    senderAddr,
+    lpCoins,
+  )
+  if err != nil {
+		return errorsmod.Wrapf(types.ErrWitdhrawingLiquidity, "error: %s", err)
+  }
+
+  err = k.bankKeeper.SendCoinsFromAccountToModule(
+    ctx,
+    senderAddr,
+    types.ModuleName,
+    shares,
+  )
+  if err != nil {
+		return errorsmod.Wrapf(types.ErrWitdhrawingLiquidity, "error: %s", err)
+  }
+
+  err =  k.bankKeeper.BurnCoins(ctx, types.ModuleName, shares)
+  if err != nil {
+		return errorsmod.Wrapf(types.ErrWitdhrawingLiquidity, "error: %s", err)
+  }
+
+  return nil
+}
+
+func (k Keeper) ExecuteSwap(
+  ctx context.Context,
+  senderAddr sdk.AccAddress,
+  coinsIn sdk.Coins,
+  coinsOut sdk.Coins,
+) error {
+  err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, coinsIn)
+  if err != nil {
+		return errorsmod.Wrapf(types.ErrSwapping, "error: %s", err)
+  }
+
+  err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, senderAddr, coinsOut)
+  if err != nil {
+		return errorsmod.Wrapf(types.ErrSwapping, "error: %s", err)
+  }
+
+  return nil
 }

@@ -16,46 +16,38 @@ func (k msgServer) Withdraw(goCtx context.Context, msg *types.MsgWithdraw) (*typ
   if !found {
 		return nil, errorsmod.Wrapf(types.ErrPoolNonExistant, "pool %s does not exist", msg.PoolId)
   }
-
   poolDenom := types.PoolDenom(msg.PoolId)
-  senderAddr, _ := sdk.AccAddressFromBech32(msg.Creator)
-  senderShares := k.bankKeeper.SpendableCoin(ctx, senderAddr, poolDenom)
 
+  senderAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+  if err != nil {
+    return nil, err
+  }
+
+  senderShares := k.bankKeeper.SpendableCoin(ctx, senderAddr, poolDenom)
   if msg.Shares > senderShares.Amount.Uint64() {
-    return nil, errorsmod.Wrapf(types.ErrInsufficientShhares, "%s has %d shares avaliable", senderAddr, senderShares.Amount.Uint64())
+    return nil, errorsmod.Wrapf(
+      types.ErrWitdhrawingLiquidity,
+      "%s has %d shares avaliable",
+      senderAddr,
+      senderShares.Amount.Uint64(),
+    )
   }
 
   shareRatio := types.CalculateSharesPercentage(msg.Shares, pool.TotalShares)
   a0 := uint64(float64(pool.Amount0) * shareRatio)
   a1 := uint64(float64(pool.Amount1) * shareRatio)
 
-	lpCoins, _ := sdk.ParseCoinsNormalized(
-    types.FormatCoinsStr(pool.Token0, pool.Token1, a0, a1),
-  )
-  err := k.bankKeeper.SendCoinsFromModuleToAccount(
-    ctx,
-    types.ModuleName,
-    senderAddr,
-    lpCoins,
-  )
+  lpCoins, err := types.CreateLPCoins(pool.Token0, pool.Token1, a0, a1)
   if err != nil {
     return nil, err
   }
 
-	shareCoins, err := sdk.ParseCoinsNormalized(
-    types.FormatShareCoinStr(msg.PoolId, msg.Shares),
-  )
-  err = k.bankKeeper.SendCoinsFromAccountToModule(
-    ctx,
-    senderAddr,
-    types.ModuleName,
-    shareCoins,
-  )
+  shares, err := types.CreateSharesCoins(msg.PoolId, msg.Shares)
   if err != nil {
     return nil, err
   }
 
-  err =  k.bankKeeper.BurnCoins(ctx, types.ModuleName, shareCoins)
+  err = k.ExecuteWithdrawal(ctx, senderAddr, lpCoins, shares)
   if err != nil {
     return nil, err
   }

@@ -3,6 +3,8 @@ package types
 import (
 	"fmt"
 	"math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func OrderTokensAndAmounts(token0, token1 string, amount0, amount1 uint64) (string, string, uint64, uint64) {
@@ -19,10 +21,6 @@ func GeneratePoolId(token0, token1 string) string {
 	}
 
 	return fmt.Sprintf("%s-%s", token1, token0)
-}
-
-func PoolDenom(poolId string) string {
-	return fmt.Sprintf("%s-shares", poolId)
 }
 
 func CalculateShares(amount0, amount1, totalShares uint64) uint64 {
@@ -53,10 +51,27 @@ func CalculateSwapAmount(k, amount0, amount1, amountIn0, amountIn1 uint64) (uint
   }
 }
 
+func PoolDenom(poolId string) string {
+	return fmt.Sprintf("%s-shares", poolId)
+}
+
+func CreateLPCoins(token0, token1 string, amount0, amount1 uint64) (sdk.Coins, error) {
+  coinsStr := fmt.Sprintf("%d%s,%d%s", amount0, token0, amount1, token1)
+  return sdk.ParseCoinsNormalized(coinsStr)
+}
+
+// remove
 func FormatCoinsStr(token0, token1 string, amount0, amount1 uint64) string {
 	return fmt.Sprintf("%d%s,%d%s", amount0, token0, amount1, token1)
 }
 
+func CreateSharesCoins(poolId string, amount uint64) (sdk.Coins, error) {
+	denom := PoolDenom(poolId)
+  coinsStr := fmt.Sprintf("%d%s", amount, denom)
+  return sdk.ParseCoinsNormalized(coinsStr)
+}
+
+// remove
 func FormatShareCoinStr(poolId string, amount uint64) string {
 	denom := PoolDenom(poolId)
 	return fmt.Sprintf("%d%s", amount, denom)
